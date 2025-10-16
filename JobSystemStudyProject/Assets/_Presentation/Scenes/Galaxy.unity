@@ -413,6 +413,7 @@ MonoBehaviour:
   thickness: 10
   speedFactor: 1000
   radiusFactor: 4
+  logarithmCalculationDelay: 5
 --- !u!4 &796551588
 Transform:
   m_ObjectHideFlags: 0

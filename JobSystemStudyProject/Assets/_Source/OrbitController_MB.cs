@@ -1,9 +1,7 @@
-using System;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
-using UnityEngine.Serialization;
 
 public class OrbitController_MB : MonoBehaviour
 {
@@ -18,11 +16,16 @@ public class OrbitController_MB : MonoBehaviour
     [SerializeField] private float speedFactor;
     [Tooltip("How much radius affects speed")]
     [SerializeField] private float radiusFactor;
+
+    [Space]
+    [SerializeField] private float logarithmCalculationDelay;
     
     private NativeArray<float> _radiusArray;
     private NativeArray<float> _angularSpeedArray;
     private NativeArray<float> _angleArray;
     private TransformAccessArray _transformAccessArray;
+
+    private float _logarithmCalculationTimer;
     
     private void Start()
     {
@@ -37,7 +40,7 @@ public class OrbitController_MB : MonoBehaviour
             float yPos = UnityEngine.Random.Range(-thickness / 2.0f, thickness / 2.0f);
             float angle = UnityEngine.Random.Range(0.0f, 360.0f);
             
-            Vector3 position = new Vector3(radius, yPos, 0.0f);
+            Vector3 position = new(radius, yPos, 0.0f);
             transforms[i] = Instantiate(_objectPrefab, position, Quaternion.identity);
             
             _radiusArray[i] = radius;
@@ -58,6 +61,16 @@ public class OrbitController_MB : MonoBehaviour
         };
         var orbitHandle = orbitJob.Schedule(_transformAccessArray);
         orbitHandle.Complete();
+
+        _logarithmCalculationTimer += Time.deltaTime;
+        if (_logarithmCalculationTimer > logarithmCalculationDelay)
+        {
+            _logarithmCalculationTimer = 0;
+
+            var logarithmJob = new LogarithmJob();
+            var logarithmHandle = logarithmJob.Schedule(objectsCount, 1);
+            logarithmHandle.Complete();
+        }
     }
 
     private void OnDestroy()
